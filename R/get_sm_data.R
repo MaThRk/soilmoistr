@@ -22,8 +22,15 @@ get_sm_data = function(landsld = NULL,
                        days_after_window = 0,
                        point_buffer = NULL,
                        aggre_fun = NULL) {
+
   # check if the landsld data is available and has a date column ------------
   check_date(landsld)
+
+  # check that the path to the tiffs has no slash at the end
+  last_char = substr(path_sm, nchar(path_sm), nchar(path_sm))
+  if(last_char == "/"){
+    path_sm = substr(path_sm, 1, nchar(path_sm) - 1)
+  }
 
   # check if polygon or point
   type = st_geometry_type(landsld, by_geometry = F) %>% as.character()
@@ -63,7 +70,7 @@ get_sm_data = function(landsld = NULL,
     # get the date of the slide
     date_slide = landsld[i,]$date
 
-    # range of days arounf landsld
+    # range of days around landsld
     date_range_slides = seq(date_slide - days_before_window,
                             date_slide + days_after_window,
                             by = "day")
@@ -71,9 +78,11 @@ get_sm_data = function(landsld = NULL,
     # images that are within that range
     matches = dates[dates %in% date_range_slides]
 
-
     # append the number of matches for that slide
     landsld[["n_matches"]][[i]] = length(matches)
+
+    # get the actual spatial object
+    spatial.obj = landsld[i,]
 
     # if there is a match check the raster values that we have at that location
     if (length(matches) > 0) {
@@ -84,12 +93,14 @@ get_sm_data = function(landsld = NULL,
       # POINTS OR BUFFERED POINTS
       if (point) {
 
-        res = point_extraction(landsld, matches, dates, point_buffer, aggre_fun)
+        res = point_extraction(spatial.obj, matches, dates, point_buffer, aggre_fun)
+        landsld[["sm_values"]][[i]] = res
 
       } else{
 
         # WORKING WITH POLYGONS
-        res = poly_extraction(landsld, matches, dates, aggre_fun)
+        res = poly_extraction(spatial.obj, matches, dates, aggre_fun)
+        landsld[["sm_values"]][[i]] = res
 
       }
 
@@ -98,7 +109,6 @@ get_sm_data = function(landsld = NULL,
       # No Match of dates --> the values for that slide is 0
       landsld[["sm_values"]][[i]] = NA
     }
-
   }
 
   return(landsld)

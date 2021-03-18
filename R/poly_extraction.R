@@ -54,12 +54,8 @@ poly_extraction = function(landsld,
     # stack all the extracted dfs to one
     values_extraction = do.call("rbind", values_match)
 
-    # put the df with the extracted values in the list
-    landsld[["sm_values"]][[i]] = values_extraction
-
-
-
-    return(landsld)
+    # return the df
+    return(values_extraction)
 
   }
 

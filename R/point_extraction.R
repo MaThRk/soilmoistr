@@ -6,7 +6,7 @@
 #' @export
 
 
-point_extraction = function(landsld,
+point_extraction = function(spatial.obj,
                             matches,
                             dates,
                             point_buffer,
@@ -31,7 +31,7 @@ point_extraction = function(landsld,
       matched_stars = read_stars(paths_sm_tiffs[[idx]])
 
       # extract the raster value for that point
-      point_extraction = st_extract(matched_stars, landsld) %>%
+      point_extraction = st_extract(matched_stars, spatial.obj) %>%
         st_drop_geometry() %>%
         mutate(date_sm_acquisition = match)
 
@@ -43,7 +43,7 @@ point_extraction = function(landsld,
     } else{
       # We create the buffer
       # we use a polygon --> exact_extract
-      buf = st_buffer(landsld[i, ], point_buffer)
+      buf = st_buffer(spatial.obj[i, ], point_buffer)
 
       # load the tif as raster
       matched_raster = raster(paths_sm_tiffs[[i]])
@@ -76,9 +76,12 @@ point_extraction = function(landsld,
   # stack all the extracted dfs to one
   values_extraction = do.call("rbind", values_match)
 
-  # put the df with the extracted values in the list at the first place
-  landsld[["sm_values"]][[1]] = values_extraction
+  # return the df
+  return(values_extraction)
 
-  return(landsld)
+  # put the df with the extracted values in the list at the first place
+  spatial.obj[["sm_values"]][[1]] = values_extraction
+
+  return(spatial.obj)
 
 }
