@@ -1,0 +1,106 @@
+#' Function to extract the soilmoisture data for a set of landslides with a given date
+#'
+#' @description This funtions takes a path to the folder of all the soilmoisture-tiffs and a geometry.
+#' The geometry must have a column called \code{date}. This is necessasry in order to check if there is
+#' soilmoisture data for the date of the landslide (plus, minus \code{days_before_window, days_after_window}).
+#' It then extracts the soilmoisture values for the point, the buffered point, ot the polygon.
+#'
+#'
+#' @importFrom sf read_sf st_drop_geometry st_buffer st_geometry_type
+#' @importFrom raster raster
+#' @importFrom stars read_stars st_extract
+#' @importFrom dplyr mutate
+#' @importFrom exactextractr exact_extract
+#' @importFrom magrittr '%>%'
+#'
+#'
+#' @export
+
+get_sm_data = function(landsld = NULL,
+                       path_sm = "\\\\projectdata.eurac.edu/projects/Proslide/soilmoisture/32632",
+                       days_before_window = 5,
+                       days_after_window = 0,
+                       point_buffer = NULL,
+                       aggre_fun = NULL) {
+  # check if the landsld data is available and has a date column ------------
+  check_date(landsld)
+
+  # check if polygon or point
+  type = st_geometry_type(landsld, by_geometry = F) %>% as.character()
+  if (type == "POINT") {
+    point = TRUE
+  } else{
+    point = FALSE
+  }
+
+  # get all the paths  ------------------------------------------------------
+  paths_sm_tiffs = list.files(path_sm, full.names = TRUE)
+
+  # get the dates of the tiffs ----------------------------------------------
+  dates = gsub(".*32632/(\\d{8}).*", "\\1", paths_sm_tiffs) %>% as.Date(., "%Y%m%d")
+
+  # subset the landslides to only the days ----------------------------------
+  landsld = landsld[!is.na(landsld$date),]
+
+  ################
+  # Now for each slide check if there is a soilmoisture image
+  ################
+
+  # create a column for the numner of matches and the actual soil moisture values
+  landsld[["n_matches"]] = NA
+  landsld[["sm_values"]] = vector("list", length(nrow(landsld)))
+
+  # go through each spatial row
+  for (i in seq_along(1:nrow(landsld))) {
+
+    # print superinformative message
+    n = nrow(landsld)
+    str = paste0(i, "/", n)
+    dashes = paste0(replicate(20, "-"), collapse = "")
+    cat("\n------------", str, dashes, "\n\n")
+
+
+    # get the date of the slide
+    date_slide = landsld[i,]$date
+
+    # range of days arounf landsld
+    date_range_slides = seq(date_slide - days_before_window,
+                            date_slide + days_after_window,
+                            by = "day")
+
+    # images that are within that range
+    matches = dates[dates %in% date_range_slides]
+
+
+    # append the number of matches for that slide
+    landsld[["n_matches"]][[i]] = length(matches)
+
+    # if there is a match check the raster values that we have at that location
+    if (length(matches) > 0) {
+
+      cat("MATCH\n")
+
+
+      # POINTS OR BUFFERED POINTS
+      if (point) {
+
+        res = point_extraction(landsld, matches, dates, point_buffer, aggre_fun)
+
+      } else{
+
+        # WORKING WITH POLYGONS
+        res = poly_extraction(landsld, matches, dates, aggre_fun)
+
+      }
+
+    } else{
+
+      # No Match of dates --> the values for that slide is 0
+      landsld[["sm_values"]][[i]] = NA
+    }
+
+  }
+
+  return(landsld)
+
+}
