@@ -1,8 +1,3 @@
-
-
-
-
-
 #' function to scan the landsld-df and check if there is a column called date
 #'
 #' @importFrom sf read_sf
@@ -49,4 +44,42 @@ check_date = function(landsld) {
 
   }
 
+}
+
+#' parse the dates from all the files
+get_dates = function(paths){
+ dates = gsub(pattern = ".*_(20[12]\\d\\d{4})_.*", "\\1", paths)
+ dates = as.Date(dates, "%Y%m%d")
+ return(dates)
+}
+
+#' parse the tracks from all the soilmoisture files
+get_tracks = function(paths){
+ tracks = gsub(pattern = ".*\\d{3}_([A|D]).*", "\\1", paths)
+ return(tracks)
+}
+
+#' parse the time
+get_time = function(paths){
+
+ dates = gsub(pattern = ".*_(20[12]\\d\\d{4})_.*", "\\1", paths)
+ time = gsub(pattern = ".*_(\\d{6}).*", "\\1", paths)
+
+ # we cant crate a vector like .Posixct(10) as there is no POSIX mode
+ # see ?mode
+ # but we can create posixct objects from a character
+ date_time = .POSIXct(character(length(time)))
+
+ for (i in seq_along(1:length(date_time))) {
+   date = as.POSIXct(paste0(dates[[i]], time[[i]]), format = "%Y%m%d%H%M%S")
+   date_time[[i]]  = date
+ }
+
+ return(date_time)
+}
+
+#' parse the swath
+get_swath = function(paths){
+ swath = gsub(pattern = ".*_(\\d{3}).*", "\\1", paths)
+ return(swath)
 }

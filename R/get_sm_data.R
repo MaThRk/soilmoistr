@@ -7,6 +7,7 @@
 #'
 #'
 #' @importFrom sf read_sf st_drop_geometry st_buffer st_geometry_type
+#' @importFrom lubridate hour minute second
 #' @importFrom raster raster
 #' @importFrom stars read_stars st_extract
 #' @importFrom dplyr mutate
@@ -43,8 +44,12 @@ get_sm_data = function(landsld = NULL,
   # get all the paths  ------------------------------------------------------
   paths_sm_tiffs = list.files(path_sm, full.names = TRUE)
 
-  # get the dates of the tiffs ----------------------------------------------
-  dates = gsub(".*32632/(\\d{8}).*", "\\1", paths_sm_tiffs) %>% as.Date(., "%Y%m%d")
+  # get the dates, tracks, times, swaths
+  dates = get_dates(paths_sm_tiffs)
+  tracks = get_tracks(paths_sm_tiffs)
+  swaths = get_swath(paths_sm_tiffs)
+  # this returns a Poixct object --> lubridate handles it!
+  times = get_time(paths_sm_tiffs)
 
   # subset the landslides to only the days ----------------------------------
   landsld = landsld[!is.na(landsld$date),]
@@ -64,7 +69,7 @@ get_sm_data = function(landsld = NULL,
     n = nrow(landsld)
     str = paste0(i, "/", n)
     dashes = paste0(replicate(20, "-"), collapse = "")
-    cat("\n------------", str, dashes, "\n\n")
+    cat(paste0("\r------------", str, dashes))
 
 
     # get the date of the slide
@@ -76,7 +81,11 @@ get_sm_data = function(landsld = NULL,
                             by = "day")
 
     # images that are within that range
-    matches = dates[dates %in% date_range_slides]
+    matches = date_time[dates %in% date_range_slides]
+
+  #   print(length(matches))
+  #   next
+  # }
 
     # append the number of matches for that slide
     landsld[["n_matches"]][[i]] = length(matches)
@@ -93,7 +102,15 @@ get_sm_data = function(landsld = NULL,
       # POINTS OR BUFFERED POINTS
       if (point) {
 
-        res = point_extraction(spatial.obj, matches, dates, point_buffer, aggre_fun)
+        res = point_extraction(spatial.obj = spatial.obj
+                               , paths_sm_tiffs = paths_sm_tiffs
+                               , matches = matches
+                              , tracks = tracks
+                              , swaths = swaths
+                              , date_time = date_time
+                              , point_buffer = point_buffer
+                              , aggre_fun = aggre_fun)
+
         landsld[["sm_values"]][[i]] = res
 
       } else{
