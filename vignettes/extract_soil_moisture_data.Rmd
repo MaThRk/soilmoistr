@@ -29,8 +29,96 @@ library(sf)
 
 - The idea of this function is to extract the soilmoisture data from a large stack of reprojected, cropped, resampled and compressed GeoTIFFs.
 
+- **Only Landslides with a known date are considered**
+
+- The date of the landslide, plus some days ( as specified in `days_before_window`) and minus (`days_after_window`) are then compared to the available dates of the soilmoisture-"acquisitions"
+
 - The spatial object for which to extract the values can either be 
 
   * points
   * points with a bufffer 
   * polygons 
+  
+
+## When using points and no buffer
+
+- When we are using only points (e.g. landslide initiation points) one only needs to call for example
+
+- The extraction here is done using the `st_extract`-method for stars objects which extracts values at point locations for stars-objects
+
+```{r exonlypoints, eval=FALSE}
+res = get_sm_data(<path_to_soilmoisture_data>,
+                  landsld = <landslide-object>)
+```
+
+- This will use the default values for some of the parameters:
+
+          +  days_before_window = 5,
+          +  days_after_window = 0,
+          +  point_buffer = NULL,
+          +  aggre_fun = NULL
+          
+- This mean that we look 5 days before the landslide (or any other point like object) if we find soilmoisture information
+
+## When using points and a buffer arround them
+
+- When you want to use a buffer around your point you can specify this in the `point_buffer`-parameter
+
+- You directly pass the distance in units of your landsld-object. As we are mainly working in `EPSG: 32632` this should be meters
+
+- As we are now working with a polygon, we can pass a vector with aggregation functions to the `aggre_fun`-parameter. If nothing is passed you will get back the values for all intersection cells. Look into the documentation of  [exactextracr](https://github.com/isciences/exactextractr) to know how this works in detail.
+
+```{r expointbuffer, eval=F}
+res = get_sm_data(<path_to_soilmoisture_data>,
+                  landsld = <landslide-object>,
+                  point_buffer = 300,
+                  aggre_fun = c("mean"))
+
+```
+
+
+# Example
+
+- lets load the landslide data from the `iffitoR`-package and subset it to only some movements of interest
+
+```{r example, message=F, warning=F}
+data = landsld[grepl("translational|rotational", landsld$second_level), ]
+```
+
+- check its dimensions
+
+```{r dim, warning=F, message=F}
+dim(data)
+```
+
+- lets create a copy and remove the column called `date` in order to see what happens
+  
+```{r}
+copy = data.frame(data) %>% st_as_sf()
+copy[["date"]] = NULL # remove the date column
+```
+
+- Now lets call the `get_sm_data`-function on that dataframe
+ 
+```{r nodate, message=F, warning=F}
+res = get_sm_data(
+  landsld = copy,
+  path_sm = path_sm
+)
+```
+  
+- It does not work as the dataframe really needs to have a column called *date*
+
+- Now lets use the original data to get the soilmoisture data
+
+```{r extract, warning=F, message=F}
+
+res = get_sm_data(
+  landsld = data,
+  path_sm = path_sm
+)
+
+```
+
+  
+
