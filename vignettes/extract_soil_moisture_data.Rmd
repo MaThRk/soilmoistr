@@ -112,7 +112,7 @@ res = get_sm_data(
 - Now lets use the original data to get the soilmoisture data
 
 ```{r extract, warning=F, message=F}
-path_sm = "\\\\projectdata.eurac.edu/projects/Proslide/soilmoisture/32632"
+path_sm = "/mnt/CEPH_PROJECTS/Proslide/soilmoisture/32632/"
 
 res = get_sm_data(
   landsld = data,
