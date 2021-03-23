@@ -4,7 +4,16 @@
 \alias{point_extraction}
 \title{function to extract the rainfall data for points or buffered points}
 \usage{
-point_extraction(landsld, matches, dates, point_buffer, aggre_fun)
+point_extraction(
+  spatial.obj,
+  paths_sm_tiffs,
+  matches,
+  tracks,
+  swaths,
+  date_time,
+  point_buffer,
+  aggre_fun
+)
 }
 \description{
 function to extract the rainfall data for points or buffered points

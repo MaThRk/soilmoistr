@@ -102,9 +102,4 @@ point_extraction = function(spatial.obj,
   # return the df
   return(values_extraction)
 
-  # put the df with the extracted values in the list at the first place
-  spatial.obj[["sm_values"]][[1]] = values_extraction
-
-  return(spatial.obj)
-
 }

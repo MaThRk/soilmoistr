@@ -1,0 +1,43 @@
+---
+title: "Compare Sequential and Parallel extraction for soilmoisture data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{compare_sequential_parallel}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(soilmoistr)
+library(iffitoR)
+```
+
+```{r}
+landsld = landsld[grepl("trans|rota|fast", landsld$second_level), ]
+
+##### IN SEQUENCE
+start = Sys.time()
+seq = get_sm_data(landsld = landsld,
+                  path_sm = path_sm)
+end = Sys.time()
+t1 = end - start
+#################
+
+
+##### In Parallel
+start = Sys.time()
+par = get_sm_data_parallel(landsld = landsld,
+                           path_sm = path_sm)
+end = Sys.time()
+t2 = end - start
+##################
+
+```
+

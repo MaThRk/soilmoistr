@@ -7,29 +7,35 @@
 #'
 #'
 #' @importFrom sf read_sf st_drop_geometry st_buffer st_geometry_type
-#' @importFrom lubridate hour minute second
+#' @importFrom lubridate hour minute second year
 #' @importFrom raster raster
 #' @importFrom stars read_stars st_extract
 #' @importFrom dplyr mutate
 #' @importFrom exactextractr exact_extract
 #' @importFrom magrittr '%>%'
+#' @importFrom doParallel registerDoParallel
+#' @importFrom foreach foreach %dopar%
+#' @importFrom future availableCores
+#' @importFrom future.apply future_lapply
+#'
+
 #'
 #'
-#' @export
 
-get_sm_data = function(landsld = NULL,
-                       path_sm = "\\\\projectdata.eurac.edu/projects/Proslide/soilmoisture/32632",
-                       days_before_window = 5,
-                       days_after_window = 0,
-                       point_buffer = NULL,
-                       aggre_fun = NULL) {
-
+get_sm_data_parallel = function(landsld = NULL,
+                                path_sm = "\\\\projectdata.eurac.edu/projects/Proslide/soilmoisture/32632",
+                                days_before_window = 5,
+                                days_after_window = 0,
+                                point_buffer = NULL,
+                                aggre_fun = NULL,
+                                parallel = TRUE,
+                                ncores = NULL) {
   # check if the landsld data is available and has a date column ------------
   check_date(landsld)
 
   # check that the path to the tiffs has no slash at the end
   last_char = substr(path_sm, nchar(path_sm), nchar(path_sm))
-  if(last_char == "/"){
+  if (last_char == "/") {
     path_sm = substr(path_sm, 1, nchar(path_sm) - 1)
   }
 
@@ -62,21 +68,13 @@ get_sm_data = function(landsld = NULL,
   landsld[["n_matches"]] = NA
   landsld[["sm_values"]] = vector("list", length(nrow(landsld)))
 
-  # go through each spatial row
-  for (i in seq_along(1:nrow(landsld))) {
+  #setup the parallel plan
+  plan(multisession)
 
-    # print superinformative message
-    n = nrow(landsld)
-    str = paste0(i, "/", n)
-    dashes = paste0(replicate(20, "-"), collapse = "")
-    if (i == 1) {
-      cat("Processing Slide No:\n")
-    }
-    cat(paste0("\r------------", str, dashes))
-
-
+  # go through each spatial row in parallel
+  res = future_lapply(seq_along(1:nrow(landsld)), function(i) {
     # get the date of the slide
-    date_slide = landsld[i,]$date
+    date_slide = landsld[i, ]$date
 
     # range of days around landsld
     date_range_slides = seq(date_slide - days_before_window,
@@ -90,43 +88,50 @@ get_sm_data = function(landsld = NULL,
     landsld[["n_matches"]][[i]] = length(matches)
 
     # get the actual spatial object
-    spatial.obj = landsld[i,]
+    spatial.obj = landsld[i, ]
 
     # if there is a match check the raster values that we have at that location
-    if (length(matches) > 0) {
-
+    if (length(matches) > 0)
+    {
       # cat("\nMATCH")
 
 
       # POINTS OR BUFFERED POINTS
-      if (point) {
+      if (point)
+      {
+        # res is a dataframe that will be put into the sm_values column in the landsld dataframe
+        res = point_extraction(
+          spatial.obj = spatial.obj,
+          paths_sm_tiffs = paths_sm_tiffs,
+          matches = matches,
+          tracks = tracks,
+          swaths = swaths,
+          date_time = date_time,
+          point_buffer = point_buffer,
+          aggre_fun = aggre_fun
+        )
 
-        res = point_extraction(spatial.obj = spatial.obj
-                               , paths_sm_tiffs = paths_sm_tiffs
-                               , matches = matches
-                              , tracks = tracks
-                              , swaths = swaths
-                              , date_time = date_time
-                              , point_buffer = point_buffer
-                              , aggre_fun = aggre_fun)
-
-        landsld[["sm_values"]][[i]] = res
+        # landsld[["sm_values"]][[i]] = res
 
       } else{
-
         # WORKING WITH POLYGONS
         res = poly_extraction(spatial.obj, matches, dates, aggre_fun)
-        landsld[["sm_values"]][[i]] = res
+        # landsld[["sm_values"]][[i]] = res
 
       }
 
     } else{
-
       # No Match of dates --> the values for that slide is 0
-      landsld[["sm_values"]][[i]] = NA
+      res = NA
     }
-  }
 
+    res
+  })
+
+  # put the list in the column of the df
+  landsld[["sm_values"]] = res
+
+  # return the result
   return(landsld)
 
 }
