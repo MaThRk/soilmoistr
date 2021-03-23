@@ -7,7 +7,7 @@
 #'
 #'
 #' @importFrom sf read_sf st_drop_geometry st_buffer st_geometry_type
-#' @importFrom lubridate hour minute second year
+#' @importFrom lubridate hour minute month second year
 #' @importFrom raster raster
 #' @importFrom stars read_stars st_extract
 #' @importFrom dplyr mutate
@@ -17,11 +17,9 @@
 #' @importFrom foreach foreach %dopar%
 #' @importFrom future availableCores
 #' @importFrom future.apply future_lapply
+#' @importFrom future plan
+#' @importFrom future multisession
 #'
-
-#'
-#'
-
 get_sm_data_parallel = function(landsld = NULL,
                                 path_sm = "\\\\projectdata.eurac.edu/projects/Proslide/soilmoisture/32632",
                                 days_before_window = 5,
@@ -30,6 +28,7 @@ get_sm_data_parallel = function(landsld = NULL,
                                 aggre_fun = NULL,
                                 parallel = TRUE,
                                 ncores = NULL) {
+
   # check if the landsld data is available and has a date column ------------
   check_date(landsld)
 
@@ -68,13 +67,30 @@ get_sm_data_parallel = function(landsld = NULL,
   landsld[["n_matches"]] = NA
   landsld[["sm_values"]] = vector("list", length(nrow(landsld)))
 
-  #setup the parallel plan
-  plan(multisession)
+  # if parallel
+  if (parallel) {
+    # the number of cores
+    if (is.null(ncores)) {
+      nc = availableCores() - 4
+    } else{
+      nc = ncores
+    }
+  } else{
+    stop("This only works in parallel")
+  }
 
-  # go through each spatial row in parallel
-  res = future_lapply(seq_along(1:nrow(landsld)), function(i) {
-    # get the date of the slide
-    date_slide = landsld[i, ]$date
+  # setup the workers
+  registerDoParallel(nc)
+
+
+  res = foreach(
+    i = 1:nrow(landsld),
+    .packages = c("soilmoistr",
+                  "magrittr")
+  ) %dopar% {
+
+    # get the date of the landslide
+    date_slide = landsld[i,][["date"]]
 
     # range of days around landsld
     date_range_slides = seq(date_slide - days_before_window,
@@ -82,56 +98,25 @@ get_sm_data_parallel = function(landsld = NULL,
                             by = "day")
 
     # images that are within that range
-    matches = date_time[dates %in% date_range_slides]
+    matches = times[dates %in% date_range_slides]
 
-    # append the number of matches for that slide
-    landsld[["n_matches"]][[i]] = length(matches)
+    spatial.obj = landsld[i,]
 
-    # get the actual spatial object
-    spatial.obj = landsld[i, ]
+    res = point_extraction(
+      spatial.obj = spatial.obj,
+      paths_sm_tiffs = paths_sm_tiffs,
+      matches = matches,
+      tracks = tracks,
+      swaths = swaths,
+      date_time = times,
+      point_buffer = point_buffer,
+      aggre_fun = aggre_fun)
 
-    # if there is a match check the raster values that we have at that location
-    if (length(matches) > 0)
-    {
-      # cat("\nMATCH")
+    res = res[,1]
 
-
-      # POINTS OR BUFFERED POINTS
-      if (point)
-      {
-        # res is a dataframe that will be put into the sm_values column in the landsld dataframe
-        res = point_extraction(
-          spatial.obj = spatial.obj,
-          paths_sm_tiffs = paths_sm_tiffs,
-          matches = matches,
-          tracks = tracks,
-          swaths = swaths,
-          date_time = date_time,
-          point_buffer = point_buffer,
-          aggre_fun = aggre_fun
-        )
-
-        # landsld[["sm_values"]][[i]] = res
-
-      } else{
-        # WORKING WITH POLYGONS
-        res = poly_extraction(spatial.obj, matches, dates, aggre_fun)
-        # landsld[["sm_values"]][[i]] = res
-
-      }
-
-    } else{
-      # No Match of dates --> the values for that slide is 0
-      res = NA
-    }
-
-    res
-  })
-
-  # put the list in the column of the df
-  landsld[["sm_values"]] = res
+  }
 
   # return the result
-  return(landsld)
+  return(res)
 
 }
