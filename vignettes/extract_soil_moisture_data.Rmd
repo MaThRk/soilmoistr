@@ -100,7 +100,7 @@ copy[["date"]] = NULL # remove the date column
 
 - Now lets call the `get_sm_data`-function on that dataframe
  
-```{r nodate, message=F, warning=F}
+```{r nodate, message=F, warning=F, error=TRUE}
 res = get_sm_data(
   landsld = copy,
   path_sm = path_sm
@@ -112,6 +112,7 @@ res = get_sm_data(
 - Now lets use the original data to get the soilmoisture data
 
 ```{r extract, warning=F, message=F}
+path_sm = "\\\\projectdata.eurac.edu/projects/Proslide/soilmoisture/32632"
 
 res = get_sm_data(
   landsld = data,

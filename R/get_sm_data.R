@@ -44,6 +44,12 @@ get_sm_data = function(landsld = NULL,
   # get all the paths  ------------------------------------------------------
   paths_sm_tiffs = list.files(path_sm, full.names = TRUE)
 
+
+  # if there are no files ---------------------------------------------------
+  if(length(paths_sm_tiffs) == 0){
+    stop("There are no files at the path you provided...")
+  }
+
   # get the dates, tracks, times, swaths
   dates = get_dates(paths_sm_tiffs)
   tracks = get_tracks(paths_sm_tiffs)
