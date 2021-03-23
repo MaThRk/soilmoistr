@@ -1,0 +1,36 @@
+---
+title: "Extract Soil Moisture data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{extract_soil_moisture_data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Load the necessary Packages
+
+```{r setup, message=F, warning=F}
+library(soilmoistr)
+library(iffitoR)
+library(tidyverse)
+library(raster)
+library(stars)
+library(sf)
+```
+
+# What does the function `get_sm_data` do?
+
+- The idea of this function is to extract the soilmoisture data from a large stack of reprojected, cropped, resampled and compressed GeoTIFFs.
+
+- The spatial object for which to extract the values can either be 
+
+  * points
+  * points with a bufffer 
+  * polygons 
