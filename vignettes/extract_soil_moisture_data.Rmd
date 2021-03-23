@@ -111,13 +111,15 @@ res = get_sm_data(
 
 - Now lets use the original data to get the soilmoisture data
 
-```{r extract, warning=F, message=F}
+```{r extract, warning=F, message=F, results=FALSE}
 path_sm = "/mnt/CEPH_PROJECTS/Proslide/soilmoisture/32632/"
 
-res = get_sm_data(
+landsld = landsld[1:50, ]
+
+res = (get_sm_data(
   landsld = data,
   path_sm = path_sm
-)
+)) 
 
 ```
 
