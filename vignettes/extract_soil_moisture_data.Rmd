@@ -114,7 +114,7 @@ res = get_sm_data(
 ```{r extract, warning=F, message=F, results=FALSE}
 path_sm = "/mnt/CEPH_PROJECTS/Proslide/soilmoisture/32632/"
 
-landsld = landsld[1:50, ]
+data = data[1:50, ]
 
 res = (get_sm_data(
   landsld = data,
