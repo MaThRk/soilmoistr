@@ -10,7 +10,9 @@ get_sm_data_parallel(
   days_before_window = 5,
   days_after_window = 0,
   point_buffer = NULL,
-  aggre_fun = NULL
+  aggre_fun = NULL,
+  parallel = TRUE,
+  ncores = NULL
 )
 }
 \description{
