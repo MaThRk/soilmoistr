@@ -7,7 +7,7 @@
 #'
 #'
 #' @importFrom sf read_sf st_drop_geometry st_buffer st_geometry_type
-#' @importFrom lubridate hour minute second
+#' @importFrom lubridate second minute hour day month year
 #' @importFrom raster raster
 #' @importFrom stars read_stars st_extract
 #' @importFrom dplyr mutate
@@ -84,7 +84,7 @@ get_sm_data = function(landsld = NULL,
                             by = "day")
 
     # images that are within that range
-    matches = date_time[dates %in% date_range_slides]
+    matches = times[dates %in% date_range_slides]
 
     # append the number of matches for that slide
     landsld[["n_matches"]][[i]] = length(matches)
@@ -106,7 +106,7 @@ get_sm_data = function(landsld = NULL,
                                , matches = matches
                               , tracks = tracks
                               , swaths = swaths
-                              , date_time = date_time
+                              , date_time = times
                               , point_buffer = point_buffer
                               , aggre_fun = aggre_fun)
 
