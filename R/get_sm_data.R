@@ -5,6 +5,8 @@
 #' soilmoisture data for the date of the landslide (plus, minus \code{days_before_window, days_after_window}).
 #' It then extracts the soilmoisture values for the point, the buffered point, ot the polygon.
 #'
+#' @param quiet Print an updating message on the status of the extraction
+#'
 #'
 #' @importFrom sf read_sf st_drop_geometry st_buffer st_geometry_type
 #' @importFrom lubridate second minute hour day month year
@@ -22,7 +24,8 @@ get_sm_data = function(landsld = NULL,
                        days_before_window = 5,
                        days_after_window = 0,
                        point_buffer = NULL,
-                       aggre_fun = NULL) {
+                       aggre_fun = NULL,
+                       quiet = TRUE) {
 
   # check if the landsld data is available and has a date column ------------
   check_date(landsld)
@@ -72,13 +75,15 @@ get_sm_data = function(landsld = NULL,
   for (i in seq_along(1:nrow(landsld))) {
 
     # print superinformative message
-    # n = nrow(landsld)
-    # str = paste0(i, "/", n)
-    # dashes = paste0(replicate(20, "-"), collapse = "")
-    # if (i == 1) {
-    #   cat("Processing Slide No:\n")
-    # }
-    # cat(paste0("\r------------", str, dashes))
+    if (!quiet) {
+      n = nrow(landsld)
+      str = paste0(i, "/", n)
+      dashes = paste0(replicate(20, "-"), collapse = "")
+      if (i == 1) {
+        cat("Processing Slide No:\n")
+      }
+      cat(paste0("\r------------", str, dashes))
+    }
 
 
     # get the date of the slide
@@ -100,8 +105,6 @@ get_sm_data = function(landsld = NULL,
 
     # if there is a match check the raster values that we have at that location
     if (length(matches) > 0) {
-
-      print(i)
 
       # cat("\nMATCH")
 
@@ -129,7 +132,6 @@ get_sm_data = function(landsld = NULL,
       }
 
     } else{
-      print(i)
 
       # No Match of dates --> the values for that slide is 0
       landsld[["sm_values"]][[i]] = NA
