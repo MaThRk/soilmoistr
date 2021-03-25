@@ -53,6 +53,13 @@ get_sm_data = function(landsld = NULL,
     stop("There are no files at the path you provided...")
   }
 
+  # read the first file and compare the crs to the vector geometry
+  p = list.files(path_sm, full.names = T)[[1]]
+  f = read_stars(p)
+  if(!(st_crs(f) == st_crs(landsld))){
+    stop("The CRS of the landsld-argument is not the same as the soilmoisture data")
+  }
+
   # get the dates, tracks, times, swaths
   dates = get_dates(paths_sm_tiffs)
   tracks = get_tracks(paths_sm_tiffs)
