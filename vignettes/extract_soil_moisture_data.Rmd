@@ -18,6 +18,7 @@ knitr::opts_chunk$set(
 
 ```{r setup, message=F, warning=F}
 library(soilmoistr)
+library(here)
 library(iffitoR)
 library(tidyverse)
 library(raster)
@@ -123,5 +124,78 @@ res = (get_sm_data(
 
 ```
 
-  
+
+# Work with the extracted data
+
+
+- So now we extracted the values of the soilmoisture rasters at pixel location of each slide. 
+
+- We considered the date of the slide as well as 5 anterior days
+
+- The result is stored as a list in the `dataframe` that the function `get_sm_data`returns. The list-column is called `sm_values`.
+
+- And its all still a spatial dataframe of class `sf`
+
+```{r struc, echo=F, warning=F, message=F}
+res %>% dplyr::select(c(date, PIFF_ID, second_level, sm_values)) %>% glimpse()
+```
+
+- Lets check for how much landslide data we also have soilmoisture data
+
+- Remember: That even if we have intersecting days, it still is very probable that the lanslide-point overlays with a NA-value in the soilmoisture raster.
+
+
+```{r howmanydates}
+# add fonts
+library(showtext)
+library(ggtext)
+
+# where does the package look for fonts?
+font_paths()
+# show local fonts
+font_files()
+# add the font by providing the family and the name of the truetypefont (.ttf)
+font_add(family = "DejaVu Serif", regular = "DejaVuSerif-Bold.ttf")
+
+
+# create color scale for true and false
+pal = c("TRUE" = "#b9cb99", "FALSE" = "#dda982")
+
+res %>% 
+  mutate(
+    intersection = case_when(
+      is.na(sm_values) ~ FALSE,
+      TRUE ~ TRUE
+    )
+  ) %>% 
+  count(intersection) %>% 
+  ggplot() +
+  geom_col(
+    aes(
+      x = n,
+      y = intersection,
+      fill = intersection
+    )
+  ) +
+  scale_fill_manual(values = pal) +
+  theme_light() + 
+  labs(
+    y = "",
+    x = "#",
+    title = "Number of Soilmoisture rasters intersecting in time with the landslide data"
+  ) +
+  theme(
+    legend.position = c(0.8,0.8),
+    title = element_text(family = "mono"),
+    legend.text = element_text(family = "mono"),
+    legend.background = element_blank(),
+    axis.text.y = element_blank()
+  )
+
+```
+
+
+
+
+
 

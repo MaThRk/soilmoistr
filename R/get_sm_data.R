@@ -72,13 +72,13 @@ get_sm_data = function(landsld = NULL,
   for (i in seq_along(1:nrow(landsld))) {
 
     # print superinformative message
-    n = nrow(landsld)
-    str = paste0(i, "/", n)
-    dashes = paste0(replicate(20, "-"), collapse = "")
-    if (i == 1) {
-      cat("Processing Slide No:\n")
-    }
-    cat(paste0("\r------------", str, dashes))
+    # n = nrow(landsld)
+    # str = paste0(i, "/", n)
+    # dashes = paste0(replicate(20, "-"), collapse = "")
+    # if (i == 1) {
+    #   cat("Processing Slide No:\n")
+    # }
+    # cat(paste0("\r------------", str, dashes))
 
 
     # get the date of the slide
@@ -100,6 +100,8 @@ get_sm_data = function(landsld = NULL,
 
     # if there is a match check the raster values that we have at that location
     if (length(matches) > 0) {
+
+      print(i)
 
       # cat("\nMATCH")
 
@@ -127,6 +129,7 @@ get_sm_data = function(landsld = NULL,
       }
 
     } else{
+      print(i)
 
       # No Match of dates --> the values for that slide is 0
       landsld[["sm_values"]][[i]] = NA

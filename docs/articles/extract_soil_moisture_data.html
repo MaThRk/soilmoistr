@@ -87,6 +87,7 @@
 <a href="#load-the-necessary-packages" class="anchor"></a>Load the necessary Packages</h1>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">soilmoistr</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://here.r-lib.org/">here</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">iffitoR</span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/raster">raster</a></span><span class="op">)</span>
@@ -185,6 +186,234 @@
   landsld <span class="op">=</span> <span class="va">data</span>,
   path_sm <span class="op">=</span> <span class="va">path_sm</span>
 <span class="op">)</span><span class="op">)</span> </code></pre></div>
+</div>
+<div id="work-with-the-extracted-data" class="section level1">
+<h1 class="hasAnchor">
+<a href="#work-with-the-extracted-data" class="anchor"></a>Work with the extracted data</h1>
+<ul>
+<li><p>So now we extracted the values of the soilmoisture rasters at pixel location of each slide.</p></li>
+<li><p>We considered the date of the slide as well as 5 anterior days</p></li>
+<li><p>The result is stored as a list in the <code>dataframe</code> that the function <code>get_sm_data</code>returns. The list-column is called <code>sm_values</code>.</p></li>
+<li><p>And its all still a spatial dataframe of class <code>sf</code></p></li>
+</ul>
+<pre><code>#&gt; Rows: 26
+#&gt; Columns: 5
+#&gt; $ date         &lt;date&gt; 2014-02-11, 2013-10-31, 1998-06-08, 1993-04-30, 1959-12…
+#&gt; $ PIFF_ID      &lt;dbl&gt; 60300, 140200, 230100, 310100, 370100, 371700, 420100, 4…
+#&gt; $ second_level &lt;chr&gt; "rotational slide", "rotational slide", "rotational slid…
+#&gt; $ sm_values    &lt;list&gt; [NA, NA, NA, NA, NA, &lt;data.frame[4 x 5]&gt;, NA, NA, NA, N…
+#&gt; $ geometry     &lt;POINT [m]&gt; POINT (671300.8 5123189), POINT (722251.5 5190727)…</code></pre>
+<ul>
+<li><p>Lets check for how much landslide data we also have soilmoisture data</p></li>
+<li><p>Remember: That even if we have intersecting days, it still is very probable that the lanslide-point overlays with a NA-value in the soilmoisture raster.</p></li>
+</ul>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># add fonts</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/yixuan/showtext">showtext</a></span><span class="op">)</span>
+<span class="co">#&gt; Loading required package: sysfonts</span>
+<span class="co">#&gt; Loading required package: showtextdb</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/ggtext/">ggtext</a></span><span class="op">)</span>
+
+<span class="co"># where does the package look for fonts?</span>
+<span class="fu">font_paths</span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt;  [1] "/usr/local/share/fonts"                      </span>
+<span class="co">#&gt;  [2] "/usr/share/fonts"                            </span>
+<span class="co">#&gt;  [3] "/usr/share/fonts/cmap"                       </span>
+<span class="co">#&gt;  [4] "/usr/share/fonts/cMap"                       </span>
+<span class="co">#&gt;  [5] "/usr/share/fonts/cmap/adobe-cns1"            </span>
+<span class="co">#&gt;  [6] "/usr/share/fonts/cmap/adobe-gb1"             </span>
+<span class="co">#&gt;  [7] "/usr/share/fonts/cmap/adobe-japan1"          </span>
+<span class="co">#&gt;  [8] "/usr/share/fonts/cmap/adobe-japan2"          </span>
+<span class="co">#&gt;  [9] "/usr/share/fonts/cmap/adobe-korea1"          </span>
+<span class="co">#&gt; [10] "/usr/share/fonts/truetype"                   </span>
+<span class="co">#&gt; [11] "/usr/share/fonts/truetype/dejavu"            </span>
+<span class="co">#&gt; [12] "/usr/share/fonts/truetype/lato"              </span>
+<span class="co">#&gt; [13] "/usr/share/fonts/truetype/lyx"               </span>
+<span class="co">#&gt; [14] "/usr/share/fonts/truetype/ttf-bitstream-vera"</span>
+<span class="co">#&gt; [15] "/usr/share/fonts/X11"                        </span>
+<span class="co">#&gt; [16] "/usr/share/fonts/X11/encodings"              </span>
+<span class="co">#&gt; [17] "/usr/share/fonts/X11/encodings/large"        </span>
+<span class="co">#&gt; [18] "/usr/share/fonts/X11/misc"                   </span>
+<span class="co">#&gt; [19] "/usr/share/fonts/X11/Type1"                  </span>
+<span class="co">#&gt; [20] "/usr/share/fonts/X11/util"</span>
+<span class="co"># show local fonts</span>
+<span class="fu">font_files</span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt;                                            path                    file</span>
+<span class="co">#&gt; 1              /usr/share/fonts/truetype/dejavu     DejaVuSans-Bold.ttf</span>
+<span class="co">#&gt; 2              /usr/share/fonts/truetype/dejavu          DejaVuSans.ttf</span>
+<span class="co">#&gt; 3              /usr/share/fonts/truetype/dejavu DejaVuSansMono-Bold.ttf</span>
+<span class="co">#&gt; 4              /usr/share/fonts/truetype/dejavu      DejaVuSansMono.ttf</span>
+<span class="co">#&gt; 5              /usr/share/fonts/truetype/dejavu    DejaVuSerif-Bold.ttf</span>
+<span class="co">#&gt; 6              /usr/share/fonts/truetype/dejavu         DejaVuSerif.ttf</span>
+<span class="co">#&gt; 7                /usr/share/fonts/truetype/lato          Lato-Black.ttf</span>
+<span class="co">#&gt; 8                /usr/share/fonts/truetype/lato    Lato-BlackItalic.ttf</span>
+<span class="co">#&gt; 9                /usr/share/fonts/truetype/lato           Lato-Bold.ttf</span>
+<span class="co">#&gt; 10               /usr/share/fonts/truetype/lato     Lato-BoldItalic.ttf</span>
+<span class="co">#&gt; 11               /usr/share/fonts/truetype/lato       Lato-Hairline.ttf</span>
+<span class="co">#&gt; 12               /usr/share/fonts/truetype/lato Lato-HairlineItalic.ttf</span>
+<span class="co">#&gt; 13               /usr/share/fonts/truetype/lato          Lato-Heavy.ttf</span>
+<span class="co">#&gt; 14               /usr/share/fonts/truetype/lato    Lato-HeavyItalic.ttf</span>
+<span class="co">#&gt; 15               /usr/share/fonts/truetype/lato         Lato-Italic.ttf</span>
+<span class="co">#&gt; 16               /usr/share/fonts/truetype/lato          Lato-Light.ttf</span>
+<span class="co">#&gt; 17               /usr/share/fonts/truetype/lato    Lato-LightItalic.ttf</span>
+<span class="co">#&gt; 18               /usr/share/fonts/truetype/lato         Lato-Medium.ttf</span>
+<span class="co">#&gt; 19               /usr/share/fonts/truetype/lato   Lato-MediumItalic.ttf</span>
+<span class="co">#&gt; 20               /usr/share/fonts/truetype/lato        Lato-Regular.ttf</span>
+<span class="co">#&gt; 21               /usr/share/fonts/truetype/lato       Lato-Semibold.ttf</span>
+<span class="co">#&gt; 22               /usr/share/fonts/truetype/lato Lato-SemiboldItalic.ttf</span>
+<span class="co">#&gt; 23               /usr/share/fonts/truetype/lato           Lato-Thin.ttf</span>
+<span class="co">#&gt; 24               /usr/share/fonts/truetype/lato     Lato-ThinItalic.ttf</span>
+<span class="co">#&gt; 25                /usr/share/fonts/truetype/lyx              cmex10.ttf</span>
+<span class="co">#&gt; 26                /usr/share/fonts/truetype/lyx              cmmi10.ttf</span>
+<span class="co">#&gt; 27                /usr/share/fonts/truetype/lyx               cmr10.ttf</span>
+<span class="co">#&gt; 28                /usr/share/fonts/truetype/lyx              cmsy10.ttf</span>
+<span class="co">#&gt; 29                /usr/share/fonts/truetype/lyx             esint10.ttf</span>
+<span class="co">#&gt; 30                /usr/share/fonts/truetype/lyx              eufm10.ttf</span>
+<span class="co">#&gt; 31                /usr/share/fonts/truetype/lyx              msam10.ttf</span>
+<span class="co">#&gt; 32                /usr/share/fonts/truetype/lyx              msbm10.ttf</span>
+<span class="co">#&gt; 33                /usr/share/fonts/truetype/lyx              rsfs10.ttf</span>
+<span class="co">#&gt; 34                /usr/share/fonts/truetype/lyx            stmary10.ttf</span>
+<span class="co">#&gt; 35                /usr/share/fonts/truetype/lyx              wasy10.ttf</span>
+<span class="co">#&gt; 36 /usr/share/fonts/truetype/ttf-bitstream-vera                Vera.ttf</span>
+<span class="co">#&gt; 37 /usr/share/fonts/truetype/ttf-bitstream-vera              VeraBd.ttf</span>
+<span class="co">#&gt; 38 /usr/share/fonts/truetype/ttf-bitstream-vera              VeraBI.ttf</span>
+<span class="co">#&gt; 39 /usr/share/fonts/truetype/ttf-bitstream-vera              VeraIt.ttf</span>
+<span class="co">#&gt; 40 /usr/share/fonts/truetype/ttf-bitstream-vera            VeraMoBd.ttf</span>
+<span class="co">#&gt; 41 /usr/share/fonts/truetype/ttf-bitstream-vera            VeraMoBI.ttf</span>
+<span class="co">#&gt; 42 /usr/share/fonts/truetype/ttf-bitstream-vera            VeraMoIt.ttf</span>
+<span class="co">#&gt; 43 /usr/share/fonts/truetype/ttf-bitstream-vera            VeraMono.ttf</span>
+<span class="co">#&gt; 44 /usr/share/fonts/truetype/ttf-bitstream-vera              VeraSe.ttf</span>
+<span class="co">#&gt; 45 /usr/share/fonts/truetype/ttf-bitstream-vera            VeraSeBd.ttf</span>
+<span class="co">#&gt;                      family         face                   version</span>
+<span class="co">#&gt; 1               DejaVu Sans         Bold              Version 2.37</span>
+<span class="co">#&gt; 2               DejaVu Sans         Book              Version 2.37</span>
+<span class="co">#&gt; 3          DejaVu Sans Mono         Bold              Version 2.37</span>
+<span class="co">#&gt; 4          DejaVu Sans Mono         Book              Version 2.37</span>
+<span class="co">#&gt; 5              DejaVu Serif         Bold              Version 2.37</span>
+<span class="co">#&gt; 6              DejaVu Serif         Book              Version 2.37</span>
+<span class="co">#&gt; 7                Lato Black      Regular Version 2.007; 2014-02-27</span>
+<span class="co">#&gt; 8                Lato Black       Italic Version 2.007; 2014-02-27</span>
+<span class="co">#&gt; 9                      Lato         Bold Version 2.007; 2014-02-27</span>
+<span class="co">#&gt; 10                     Lato  Bold Italic Version 2.007; 2014-02-27</span>
+<span class="co">#&gt; 11            Lato Hairline      Regular Version 2.007; 2014-02-27</span>
+<span class="co">#&gt; 12            Lato Hairline       Italic Version 2.007; 2014-02-27</span>
+<span class="co">#&gt; 13               Lato Heavy      Regular Version 2.007; 2014-02-27</span>
+<span class="co">#&gt; 14               Lato Heavy       Italic Version 2.007; 2014-02-27</span>
+<span class="co">#&gt; 15                     Lato       Italic Version 2.007; 2014-02-27</span>
+<span class="co">#&gt; 16               Lato Light      Regular Version 2.007; 2014-02-27</span>
+<span class="co">#&gt; 17               Lato Light       Italic Version 2.007; 2014-02-27</span>
+<span class="co">#&gt; 18              Lato Medium      Regular Version 2.006; 2014-01-15</span>
+<span class="co">#&gt; 19              Lato Medium       Italic Version 2.006; 2014-01-15</span>
+<span class="co">#&gt; 20                     Lato      Regular Version 2.007; 2014-02-27</span>
+<span class="co">#&gt; 21            Lato Semibold      Regular Version 2.006; 2014-01-15</span>
+<span class="co">#&gt; 22            Lato Semibold       Italic Version 2.006; 2014-01-15</span>
+<span class="co">#&gt; 23                Lato Thin      Regular Version 2.007; 2014-02-27</span>
+<span class="co">#&gt; 24                Lato Thin       Italic Version 2.007; 2014-02-27</span>
+<span class="co">#&gt; 25                   cmex10          LyX             1.1/12-Nov-94</span>
+<span class="co">#&gt; 26                   cmmi10          LyX             1.1/12-Nov-94</span>
+<span class="co">#&gt; 27                    cmr10          LyX             1.1/12-Nov-94</span>
+<span class="co">#&gt; 28                   cmsy10          LyX             1.1/12-Nov-94</span>
+<span class="co">#&gt; 29                  esint10          LyX          Version 001.001 </span>
+<span class="co">#&gt; 30                   eufm10          LyX             1.2/19-Jan-95</span>
+<span class="co">#&gt; 31                   msam10          LyX             1.2/19-Jan-95</span>
+<span class="co">#&gt; 32                   msbm10          LyX             1.2/19-Jan-95</span>
+<span class="co">#&gt; 33                   rsfs10          LyX          Version 001.001 </span>
+<span class="co">#&gt; 34                 stmary10          LyX          Version 001.001 </span>
+<span class="co">#&gt; 35                   wasy10          LyX          Version 001.002 </span>
+<span class="co">#&gt; 36      Bitstream Vera Sans        Roman              Release 1.10</span>
+<span class="co">#&gt; 37      Bitstream Vera Sans         Bold              Release 1.10</span>
+<span class="co">#&gt; 38      Bitstream Vera Sans Bold Oblique              Release 1.10</span>
+<span class="co">#&gt; 39      Bitstream Vera Sans      Oblique              Release 1.10</span>
+<span class="co">#&gt; 40 Bitstream Vera Sans Mono         Bold              Release 1.10</span>
+<span class="co">#&gt; 41 Bitstream Vera Sans Mono Bold Oblique              Release 1.10</span>
+<span class="co">#&gt; 42 Bitstream Vera Sans Mono      Oblique              Release 1.10</span>
+<span class="co">#&gt; 43 Bitstream Vera Sans Mono        Roman              Release 1.10</span>
+<span class="co">#&gt; 44     Bitstream Vera Serif        Roman              Release 1.10</span>
+<span class="co">#&gt; 45     Bitstream Vera Serif         Bold              Release 1.10</span>
+<span class="co">#&gt;                          ps_name</span>
+<span class="co">#&gt; 1                DejaVuSans-Bold</span>
+<span class="co">#&gt; 2                     DejaVuSans</span>
+<span class="co">#&gt; 3            DejaVuSansMono-Bold</span>
+<span class="co">#&gt; 4                 DejaVuSansMono</span>
+<span class="co">#&gt; 5               DejaVuSerif-Bold</span>
+<span class="co">#&gt; 6                    DejaVuSerif</span>
+<span class="co">#&gt; 7                     Lato-Black</span>
+<span class="co">#&gt; 8               Lato-BlackItalic</span>
+<span class="co">#&gt; 9                      Lato-Bold</span>
+<span class="co">#&gt; 10               Lato-BoldItalic</span>
+<span class="co">#&gt; 11                 Lato-Hairline</span>
+<span class="co">#&gt; 12           Lato-HairlineItalic</span>
+<span class="co">#&gt; 13                    Lato-Heavy</span>
+<span class="co">#&gt; 14              Lato-HeavyItalic</span>
+<span class="co">#&gt; 15                   Lato-Italic</span>
+<span class="co">#&gt; 16                    Lato-Light</span>
+<span class="co">#&gt; 17              Lato-LightItalic</span>
+<span class="co">#&gt; 18                   Lato-Medium</span>
+<span class="co">#&gt; 19             Lato-MediumItalic</span>
+<span class="co">#&gt; 20                  Lato-Regular</span>
+<span class="co">#&gt; 21                 Lato-Semibold</span>
+<span class="co">#&gt; 22           Lato-SemiboldItalic</span>
+<span class="co">#&gt; 23                     Lato-Thin</span>
+<span class="co">#&gt; 24               Lato-ThinItalic</span>
+<span class="co">#&gt; 25                        cmex10</span>
+<span class="co">#&gt; 26                        cmmi10</span>
+<span class="co">#&gt; 27                         cmr10</span>
+<span class="co">#&gt; 28                        cmsy10</span>
+<span class="co">#&gt; 29                       esint10</span>
+<span class="co">#&gt; 30                        eufm10</span>
+<span class="co">#&gt; 31                        msam10</span>
+<span class="co">#&gt; 32                        msbm10</span>
+<span class="co">#&gt; 33                        rsfs10</span>
+<span class="co">#&gt; 34                      stmary10</span>
+<span class="co">#&gt; 35                        wasy10</span>
+<span class="co">#&gt; 36       BitstreamVeraSans-Roman</span>
+<span class="co">#&gt; 37        BitstreamVeraSans-Bold</span>
+<span class="co">#&gt; 38 BitstreamVeraSans-BoldOblique</span>
+<span class="co">#&gt; 39     BitstreamVeraSans-Oblique</span>
+<span class="co">#&gt; 40    BitstreamVeraSansMono-Bold</span>
+<span class="co">#&gt; 41  BitstreamVeraSansMono-BoldOb</span>
+<span class="co">#&gt; 42 BitstreamVeraSansMono-Oblique</span>
+<span class="co">#&gt; 43   BitstreamVeraSansMono-Roman</span>
+<span class="co">#&gt; 44      BitstreamVeraSerif-Roman</span>
+<span class="co">#&gt; 45       BitstreamVeraSerif-Bold</span>
+<span class="co"># add the font by providing the family and the name of the truetypefont (.ttf)</span>
+<span class="fu">font_add</span><span class="op">(</span>family <span class="op">=</span> <span class="st">"DejaVu Serif"</span>, regular <span class="op">=</span> <span class="st">"DejaVuSerif-Bold.ttf"</span><span class="op">)</span>
+
+
+<span class="co"># create color scale for true and false</span>
+<span class="va">pal</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"TRUE"</span> <span class="op">=</span> <span class="st">"#b9cb99"</span>, <span class="st">"FALSE"</span> <span class="op">=</span> <span class="st">"#dda982"</span><span class="op">)</span>
+
+<span class="va">res</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
+    intersection <span class="op">=</span> <span class="fu">case_when</span><span class="op">(</span>
+      <span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">sm_values</span><span class="op">)</span> <span class="op">~</span> <span class="cn">FALSE</span>,
+      <span class="cn">TRUE</span> <span class="op">~</span> <span class="cn">TRUE</span>
+    <span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">count</span><span class="op">(</span><span class="va">intersection</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">ggplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">geom_col</span><span class="op">(</span>
+    <span class="fu">aes</span><span class="op">(</span>
+      x <span class="op">=</span> <span class="va">n</span>,
+      y <span class="op">=</span> <span class="va">intersection</span>,
+      fill <span class="op">=</span> <span class="va">intersection</span>
+    <span class="op">)</span>
+  <span class="op">)</span> <span class="op">+</span>
+  <span class="fu">scale_fill_manual</span><span class="op">(</span>values <span class="op">=</span> <span class="va">pal</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu">theme_light</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">labs</span><span class="op">(</span>
+    y <span class="op">=</span> <span class="st">""</span>,
+    x <span class="op">=</span> <span class="st">"#"</span>,
+    title <span class="op">=</span> <span class="st">"Number of Soilmoisture rasters intersecting in time with the landslide data"</span>
+  <span class="op">)</span> <span class="op">+</span>
+  <span class="fu">theme</span><span class="op">(</span>
+    legend.position <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.8</span>,<span class="fl">0.8</span><span class="op">)</span>,
+    title <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>family <span class="op">=</span> <span class="st">"mono"</span><span class="op">)</span>,
+    legend.text <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>family <span class="op">=</span> <span class="st">"mono"</span><span class="op">)</span>,
+    legend.background <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span>,
+    axis.text.y <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span>
+  <span class="op">)</span></code></pre></div>
+<p><img src="extract_soil_moisture_data_files/figure-html/howmanydates-1.png" width="700"></p>
 </div>
   </div>
 
