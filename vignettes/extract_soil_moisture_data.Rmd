@@ -115,7 +115,7 @@ res = get_sm_data(
 ```{r extract, warning=F, message=F, results=FALSE}
 path_sm = "/mnt/CEPH_PROJECTS/Proslide/soilmoisture/32632/"
 
-data = data[1:50, ]
+# data = data[1:50, ]
 
 res = (get_sm_data(
   landsld = data,
@@ -145,21 +145,20 @@ res %>% dplyr::select(c(date, PIFF_ID, second_level, sm_values)) %>% glimpse()
 - Remember: That even if we have intersecting days, it still is very probable that the lanslide-point overlays with a NA-value in the soilmoisture raster.
 
 
-```{r howmanydates}
+```{r howmanydates,message=F, warning=F, echo=F, dpi=500, fig.width=10, out.width="100%"}
 # add fonts
 library(showtext)
 library(ggtext)
 
 # where does the package look for fonts?
-font_paths()
+# font_paths()
 # show local fonts
-font_files()
+# font_files()
 # add the font by providing the family and the name of the truetypefont (.ttf)
 font_add(family = "DejaVu Serif", regular = "DejaVuSerif-Bold.ttf")
 
-
 # create color scale for true and false
-pal = c("TRUE" = "#b9cb99", "FALSE" = "#dda982")
+pal = c("TRUE" = "#b9cb99", "FALSE" = "#c23b22")
 
 res %>% 
   mutate(
@@ -182,7 +181,9 @@ res %>%
   labs(
     y = "",
     x = "#",
-    title = "Number of Soilmoisture rasters intersecting in time with the landslide data"
+    title = "Number of Soilmoisture rasters intersecting in time with the landslide data",
+    caption = "Considered were only the translational and rotational slides.
+               A temoral buffer of 5 days was applied to the slides."
   ) +
   theme(
     legend.position = c(0.8,0.8),
