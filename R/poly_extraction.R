@@ -21,6 +21,12 @@ poly_extraction = function(spatial.obj,
   # create the list of values for each matches date that we will put in the sm_values list
   values_match = vector("list", length = length(matches))
 
+  # set the buffer outside of the for-loop or we blow up the buffer each time
+  # if we were originally using points, we must here create the buffer around that point
+  if (!is.null(point_buffer)) {
+    spatial.obj = st_buffer(spatial.obj, point_buffer)
+  }
+
   # for potentially multiple matches in that time frame
   for (j in seq_along(1:length(matches))) {
 
@@ -47,13 +53,9 @@ poly_extraction = function(spatial.obj,
     # load the soilmoisture image as raster
     matched_raster = raster(paths_sm_tiffs[[idx]])
 
-    # if we were originally using points, we must here create the buffer around that point
-    if (!is.null(point_buffer)) {
-      spatial.obj = st_buffer(spatial.obj, point_buffer)
-    }
-
     # extract the cell-values --> no aggregation
     if (is.null(aggre_fun)) {
+
       res = exact_extract(matched_raster,
                                       spatial.obj,
                                       force_df = TRUE) %>%
