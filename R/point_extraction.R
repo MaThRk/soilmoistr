@@ -10,9 +10,7 @@ point_extraction = function(spatial.obj,
                             matches,
                             tracks,
                             swaths,
-                            date_time,
-                            point_buffer,
-                            aggre_fun) {
+                            date_time) {
 
   # create the list of values for each matches date that we will put in the sm_values list
   values_match = vector("list", length = length(matches))
@@ -41,9 +39,6 @@ point_extraction = function(spatial.obj,
     time = paste0(hour, "_", minute, "_", second)
 
 
-    # if working with point data, lets load it as stars
-    if (is.null(point_buffer)) {
-
       # load that tiff as stars object
       matched_stars = read_stars(paths_sm_tiffs[[idx]])
 
@@ -59,40 +54,6 @@ point_extraction = function(spatial.obj,
 
       # put the dataframe in the values match list
       values_match[[j]] = point_extraction
-
-    } else{
-      # We create the buffer
-      # we use a polygon --> exact_extract
-      buf = st_buffer(spatial.obj, point_buffer)
-
-      # load the tif as raster
-      matched_raster = raster(paths_sm_tiffs[[idx]])
-
-      # extract the cell-values --> no aggregation
-      if (is.null(aggre_fun)) {
-        poly_extraction = exact_extract(matched_raster,
-                                        buf,
-                                        force_df = TRUE) %>%
-          .[[1]] %>%
-          mutate(date_sm_acquisition = match)
-
-        values_match[[j]] = poly_extraction
-
-      } else{
-        # if we aggregate
-        poly_extraction = exact_extract(matched_raster,
-                                        buf,
-                                        fun = aggre_fun,
-                                        force_df = TRUE) %>%
-        mutate(date = as.Date(paste0(year, month, day), "%Y%m%d"),
-               track = track,
-               swath = swath,
-               time = time)
-
-        # put it in the list
-        values_match[[j]] = poly_extraction
-      }
-    }
 
   }
 

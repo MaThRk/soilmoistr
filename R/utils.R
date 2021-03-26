@@ -3,6 +3,7 @@
 #' @importFrom sf read_sf
 
 check_date = function(landsld) {
+
   if (is.null(landsld)) {
     stop("You need to provide a lanslide polygon")
   }
@@ -43,6 +44,30 @@ check_date = function(landsld) {
     }
 
   }
+
+  return(landsld)
+
+}
+
+
+#' check if we are working with points
+
+checkpoint = function(type, point_buffer) {
+
+  if (type == "POINT") {
+    # POINT WITHS BUFFER
+    if (!is.null(point_buffer)) {
+      point = FALSE
+      # POINTS NO BUFFER
+    } else{
+      point = TRUE
+
+      # if we pass polygons right away
+    }
+  } else
+    point = FALSE
+
+  return(point)
 
 }
 

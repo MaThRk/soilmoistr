@@ -10,8 +10,12 @@ get_sm_data(
   days_before_window = 5,
   days_after_window = 0,
   point_buffer = NULL,
-  aggre_fun = NULL
+  aggre_fun = NULL,
+  quiet = TRUE
 )
+}
+\arguments{
+\item{quiet}{Print an updating message on the status of the extraction}
 }
 \description{
 This funtions takes a path to the folder of all the soilmoisture-tiffs and a geometry.

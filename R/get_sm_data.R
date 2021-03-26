@@ -8,7 +8,8 @@
 #' @param quiet Print an updating message on the status of the extraction
 #'
 #'
-#' @importFrom sf read_sf st_drop_geometry st_buffer st_geometry_type
+#' @importFrom sf read_sf st_drop_geometry st_buffer st_geometry_type st_crs
+#
 #' @importFrom lubridate second minute hour day month year
 #' @importFrom raster raster
 #' @importFrom stars read_stars st_extract
@@ -28,7 +29,7 @@ get_sm_data = function(landsld = NULL,
                        quiet = TRUE) {
 
   # check if the landsld data is available and has a date column ------------
-  check_date(landsld)
+  landsld = check_date(landsld)
 
   # check that the path to the tiffs has no slash at the end
   last_char = substr(path_sm, nchar(path_sm), nchar(path_sm))
@@ -38,15 +39,12 @@ get_sm_data = function(landsld = NULL,
 
   # check if polygon or point
   type = st_geometry_type(landsld, by_geometry = F) %>% as.character()
-  if (type == "POINT") {
-    point = TRUE
-  } else{
-    point = FALSE
-  }
+
+  # if we have points and no buffer
+  point = checkpoint(type, point_buffer)
 
   # get all the paths  ------------------------------------------------------
   paths_sm_tiffs = list.files(path_sm, full.names = TRUE)
-
 
   # if there are no files ---------------------------------------------------
   if(length(paths_sm_tiffs) == 0){
@@ -92,7 +90,6 @@ get_sm_data = function(landsld = NULL,
       cat(paste0("\r------------", str, dashes))
     }
 
-
     # get the date of the slide
     date_slide = landsld[i,]$date
 
@@ -113,27 +110,31 @@ get_sm_data = function(landsld = NULL,
     # if there is a match check the raster values that we have at that location
     if (length(matches) > 0) {
 
-      # cat("\nMATCH")
-
-
       # POINTS OR BUFFERED POINTS
       if (point) {
 
-        res = point_extraction(spatial.obj = spatial.obj
-                               , paths_sm_tiffs = paths_sm_tiffs
-                               , matches = matches
-                              , tracks = tracks
-                              , swaths = swaths
-                              , date_time = times
-                              , point_buffer = point_buffer
-                              , aggre_fun = aggre_fun)
+        res = point_extraction(
+          spatial.obj = spatial.obj,
+          paths_sm_tiffs = paths_sm_tiffs,
+          matches = matches,
+          tracks = tracks,
+          swaths = swaths,
+          date_time = times)
 
         landsld[["sm_values"]][[i]] = res
 
       } else{
 
         # WORKING WITH POLYGONS
-        res = poly_extraction(spatial.obj, matches, dates, aggre_fun)
+        res = poly_extraction(spatial.obj = spatial.obj,
+                              paths_sm_tiffs = paths_sm_tiffs,
+                              matches = matches,
+                              tracks = tracks,
+                              swaths = swaths,
+                              point_buffer = point_buffer,
+                              times = times,
+                              aggre_fun = aggre_fun)
+
         landsld[["sm_values"]][[i]] = res
 
       }
