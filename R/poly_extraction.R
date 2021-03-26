@@ -45,7 +45,7 @@ poly_extraction = function(spatial.obj,
     time = paste0(hour, "_", minute, "_", second)
 
     # load the soilmoisture image as raster
-    matched_raster = raster(paths_sm_tiffs[[i]])
+    matched_raster = raster(paths_sm_tiffs[[idx]])
 
     # if we were originally using points, we must here create the buffer around that point
     if (!is.null(point_buffer)) {
