@@ -110,6 +110,6 @@ get_time = function(paths){
 #' parse the swath
 #' @export
 get_swath = function(paths){
- swath = gsub(pattern = ".*_(\\d{3}).*", "\\1", paths)
+ swath = gsub(pattern = ".*_(\\d{3})_.*", "\\1", paths)
  return(swath)
 }
