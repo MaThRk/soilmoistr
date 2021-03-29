@@ -72,6 +72,7 @@ checkpoint = function(type, point_buffer) {
 }
 
 #' parse the dates from all the files
+#' @export
 get_dates = function(paths){
  dates = gsub(pattern = ".*_(20[12]\\d\\d{4})_.*", "\\1", paths)
  dates = as.Date(dates, "%Y%m%d")
@@ -79,12 +80,14 @@ get_dates = function(paths){
 }
 
 #' parse the tracks from all the soilmoisture files
+#' @export
 get_tracks = function(paths){
  tracks = gsub(pattern = ".*\\d{3}_([A|D]).*", "\\1", paths)
  return(tracks)
 }
 
 #' parse the time
+#' @export
 get_time = function(paths){
 
  dates = gsub(pattern = ".*_(20[12]\\d\\d{4})_.*", "\\1", paths)
@@ -93,6 +96,7 @@ get_time = function(paths){
  # we cant crate a vector like .Posixct(10) as there is no POSIX mode
  # see ?mode
  # but we can create posixct objects from a character
+#' @export
  date_time = .POSIXct(character(length(time)))
 
  for (i in seq_along(1:length(date_time))) {
@@ -104,6 +108,7 @@ get_time = function(paths){
 }
 
 #' parse the swath
+#' @export
 get_swath = function(paths){
  swath = gsub(pattern = ".*_(\\d{3}).*", "\\1", paths)
  return(swath)
