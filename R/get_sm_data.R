@@ -18,6 +18,7 @@
 #' @importFrom magrittr '%>%'
 #'
 #'
+#'
 #' @export
 
 get_sm_data = function(landsld = NULL,
