@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /home/rkohrs@eurac.edu/.R/Makevars="5570E651"
 /home/rkohrs@eurac.edu/.Renviron="EECEC95C"
 /home/rkohrs@eurac.edu/.Rprofile="69EABC7F"
@@ -14,3 +15,11 @@
 /home/rkohrs@eurac.edu/eurac/R/soilmoistr/vignettes/extract_soil_moisture_data.Rmd="BF35D1ED"
 /mnt/CEPH_PROJECTS/Proslide/soilmoisture/prepare_rasters.py="A5670062"
 /mnt/CEPH_PROJECTS/Proslide/soilmoisture/test/prepare_rasters.py="0996BEBA"
+=======
+C:/Users/robin/Documents/.Rprofile="37655C03"
+C:/Users/robin/eurac/R/soilmoistr/NAMESPACE="CFF80308"
+C:/Users/robin/eurac/R/soilmoistr/R/get_sm_data.R="E1CEC1B3"
+C:/Users/robin/eurac/R/soilmoistr/R/point_extraction.R="E471934E"
+C:/Users/robin/eurac/R/soilmoistr/R/utils.R="42323374"
+C:/Users/robin/eurac/R/soilmoistr/vignettes/extract_soil_moisture_data.Rmd="690C558A"
+>>>>>>> 48b16707c6ed1dbe08f91d26531c9fd0e7a698f3

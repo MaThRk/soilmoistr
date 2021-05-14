@@ -4,15 +4,24 @@
 \alias{poly_extraction}
 \title{function to extract the rainfall data for points or buffered points}
 \usage{
-poly_extraction(landsld, matches, dates, aggre_fun)
+poly_extraction(
+  spatial.obj,
+  paths_sm_tiffs,
+  matches,
+  tracks,
+  swaths,
+  point_buffer,
+  times,
+  aggre_fun
+)
 }
 \arguments{
-\item{landsld}{One single polygon from a \code{sf}-object with many polygons (like on slope unit)}
-
 \item{matches}{A vector of class \code{Date} with the dates where the day of the landslide (plus minus the temporal buffer) intersect}
 
 \item{aggre_fun}{A vector of one or multiple functions in order to aggregate the raster values that fall within the polygon.
 For more see \code{\link{exact_extract}}}
+
+\item{landsld}{One single polygon from a \code{sf}-object with many polygons (like on slope unit)}
 }
 \description{
 function to extract the rainfall data for points or buffered points

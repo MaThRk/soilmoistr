@@ -10,9 +10,7 @@ point_extraction(
   matches,
   tracks,
   swaths,
-  date_time,
-  point_buffer,
-  aggre_fun
+  date_time
 )
 }
 \description{
