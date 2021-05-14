@@ -19,7 +19,7 @@ how_many_images_per_pixel = function(
   sum = foreach(i = seq_along(sm_image_paths),
                 .combine = "+") %dopar% {
 
-                 star = read_stars(sm_image_paths)
+                 star = read_stars(sm_image_paths[[i]])
                  star_vals = star[[1]]
                  star_vals[star_vals == 0] = 0 # unnecessary
                  star_vals[star_vals > 0] = 1

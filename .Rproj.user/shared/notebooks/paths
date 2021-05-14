@@ -2,6 +2,7 @@
 /home/rkohrs@eurac.edu/.Renviron="EECEC95C"
 /home/rkohrs@eurac.edu/.Rprofile="69EABC7F"
 /home/rkohrs@eurac.edu/eurac/R/soilmoistr/NAMESPACE="5D763D8A"
+/home/rkohrs@eurac.edu/eurac/R/soilmoistr/R/cumulated_pixel_value.R="75D21DEC"
 /home/rkohrs@eurac.edu/eurac/R/soilmoistr/R/get_sm_data.R="E731440C"
 /home/rkohrs@eurac.edu/eurac/R/soilmoistr/R/get_sm_data_parallel.R="648A82C9"
 /home/rkohrs@eurac.edu/eurac/R/soilmoistr/R/how_many_images_per_pixel.R="69F7A2C5"
