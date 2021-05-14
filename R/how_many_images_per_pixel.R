@@ -39,7 +39,7 @@ how_many_images_per_pixel = function(
       star_vals = star[[1]]
       star_vals[star_vals == 0] = 0 # unnecessary
       star_vals[star_vals > 0] = 1
-      base_matrix = base_matrix + star_vals
+      sum = sum + star_vals
     }
   }
 

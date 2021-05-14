@@ -45,7 +45,7 @@ cumulate_pixel_value = function(sm_image_paths = NULL) {
       cat("\r", i, "/", length(sm_image_paths))
       star = read_stars(sm_image_paths[[i]])
       star_vals = star[[1]]
-      base_matrix = base_matrix + star_vals
+      sum = sum + star_vals
     }
   }
 
